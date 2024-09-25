@@ -1,6 +1,7 @@
 import mysql.connector
 import sys  # Import sys module to use sys.exit()
 
+# Initialize and connect to mysql
 try:
     conn = mysql.connector.connect(
         host='localhost',
@@ -61,6 +62,7 @@ def main_menu(conn, cursor):
 
     conn.close()
 
+# Calculate recipe difficulty
 def calculate_difficulty(cooking_time, ingredients):
     num_ingredients = len(ingredients.split(","))
     if cooking_time < 10 and num_ingredients < 4:
@@ -72,6 +74,7 @@ def calculate_difficulty(cooking_time, ingredients):
     elif cooking_time >= 10 and num_ingredients >= 4:
         return "Hard"
 
+# Recipe display
 def format_recipe_display(recipe):
     print(f"\n{recipe[0]}. Recipe: {recipe[1].title()}")
     print(f"   Time: {recipe[3]} mins")
@@ -84,6 +87,7 @@ def sanitize_ingredients(ingredients):
     # Split by comma, trim spaces, and remove empty entries
     return ', '.join([ingredient.strip() for ingredient in ingredients.split(',') if ingredient.strip()])
 
+# Create recipe
 def create_recipe(conn, cursor):
     name = input("Enter recipe name: ")
 
@@ -113,6 +117,7 @@ def create_recipe(conn, cursor):
     conn.commit()
     print("\nRecipe added successfully!")
 
+# Search for recipe by ingredient
 def search_recipe(conn, cursor):
     #Extract all ingredients from the Recipes table
     cursor.execute("SELECT ingredients FROM Recipes")
@@ -163,6 +168,7 @@ def search_recipe(conn, cursor):
     else:
         print(f"No recipes found with the ingredient: {search_ingredient}")
 
+# Update recipes
 def update_recipe(conn, cursor):
     # Fetch and display all recipes
     cursor.execute("SELECT id, name, ingredients, cooking_time, difficulty FROM Recipes")
@@ -243,6 +249,7 @@ def update_recipe(conn, cursor):
     updated_recipe = cursor.fetchone()
     format_recipe_display(updated_recipe)
 
+# Delete recipe
 def delete_recipe(conn, cursor):
     # Fetch and display all recipes
     cursor.execute("SELECT id, name FROM Recipes")
