@@ -1,12 +1,17 @@
 import mysql.connector
+import sys  # Import sys module to use sys.exit()
 
-conn = mysql.connector.connect (
-  host = 'localhost',
-  user = 'cf-python',
-  passwd = 'password'
-)
-
-cursor = conn.cursor()
+try:
+    conn = mysql.connector.connect(
+        host='localhost',
+        user='cf-python',
+        passwd='password'
+    )
+    cursor = conn.cursor()
+    print("Database connection successful!")
+except mysql.connector.Error as err:
+    print(f"Error: {err}")
+    sys.exit(1)  # Exit the script with an error code
 
 cursor.execute("CREATE DATABASE IF NOT EXISTS task_database")
 
@@ -23,6 +28,7 @@ cursor.execute('''CREATE TABLE IF NOT EXISTS Recipes(
 def main_menu(conn, cursor):
     choice = ""
     while(choice != "quit"):
+        print("\n===================================================")
         print("  What would you like to do? Pick a choice below!  ")
         print("===================================================\n")
         print("1. Create a new recipe")
@@ -43,10 +49,12 @@ def main_menu(conn, cursor):
             elif choice == "4":
                 delete_recipe(conn, cursor)
         elif choice == "quit":
+            print("=======================================")
             print("  Thank you for using the recipe app!  ")
             print("=======================================")
             break
         else:
+            print("==================================================")
             print("Choice invalid! Pleae enter 1, 2, 3, 4, or 'quit'.")
             print("==================================================")
             print("...returning to main menu\n\n")
@@ -78,7 +86,18 @@ def sanitize_ingredients(ingredients):
 
 def create_recipe(conn, cursor):
     name = input("Enter recipe name: ")
-    cooking_time = int(input("Enter cooking time in minutes: "))
+
+    # Input validation for cooking time
+    while True:
+        try:
+            cooking_time = int(input("Enter cooking time in minutes: "))
+            if cooking_time < 0:  # Optional: Ensure cooking time is non-negative
+                print("Cooking time cannot be negative. Please enter a valid number.")
+                continue
+            break  # Exit the loop if input is valid
+        except ValueError:
+            print("Invalid input! Please enter a number for cooking time.")
+
     ingredients = input("Enter the ingredients (comma-separated): ")
     difficulty = calculate_difficulty(cooking_time, ingredients)
 
@@ -92,7 +111,7 @@ def create_recipe(conn, cursor):
     cursor.execute(insert_query, (name, ingredients, cooking_time, difficulty))
 
     conn.commit()
-    print("Recipe added successfully!")
+    print("\nRecipe added successfully!")
 
 def search_recipe(conn, cursor):
     #Extract all ingredients from the Recipes table
@@ -164,9 +183,9 @@ def update_recipe(conn, cursor):
             if any(recipe[0] == recipe_id for recipe in recipes):
                 break
             else:
-                print("Invalid ID, please select a valid recipe ID.")
+                print("\nInvalid ID, please select a valid recipe ID.")
         except ValueError:
-            print("Please enter a valid number.")
+            print("\nPlease enter a valid number.")
     
     # Select column to update
     print("\nWhat would you like to update?")
@@ -174,19 +193,19 @@ def update_recipe(conn, cursor):
     print("  2. Cooking Time")
     print("  3. Ingredients")
     while True:
-        column_choice = input("Enter your choice (1-3): ").strip()
+        column_choice = input("\nEnter your choice (1-3): ").strip()
         if column_choice in ["1", "2", "3"]:
             break
-        print("Invalid choice, please enter 1, 2, or 3.")
+        print("\nInvalid choice, please enter 1, 2, or 3.")
 
     # Collect the new value and prepare the update query
     if column_choice == "1":  # Update recipe name
-        new_value = input("Enter the new recipe name: ").strip()
+        new_value = input("\nEnter the new recipe name: ").strip()
         query = "UPDATE Recipes SET name = %s WHERE id = %s"
         cursor.execute(query, (new_value, recipe_id))
 
     elif column_choice == "2":  # Update cooking time
-        new_cooking_time = int(input("Enter the new cooking time in minutes: "))
+        new_cooking_time = int(input("\nEnter the new cooking time in minutes: "))
         # Update cooking time
         query = "UPDATE Recipes SET cooking_time = %s WHERE id = %s"
         cursor.execute(query, (new_cooking_time, recipe_id))
@@ -219,7 +238,7 @@ def update_recipe(conn, cursor):
 
     # Commit changes
     conn.commit()
-    print("Recipe updated successfully!")
+    print("\nRecipe updated successfully!")
     cursor.execute("SELECT * FROM Recipes WHERE id = %s", (recipe_id,))
     updated_recipe = cursor.fetchone()
     format_recipe_display(updated_recipe)
@@ -230,7 +249,7 @@ def delete_recipe(conn, cursor):
     recipes = cursor.fetchall()
     
     if not recipes:
-        print("No recipes available to delete.")
+        print("\nNo recipes available to delete.")
         return
 
     # Display the list of recipes with IDs
@@ -245,9 +264,9 @@ def delete_recipe(conn, cursor):
             if any(recipe[0] == recipe_id for recipe in recipes):
                 break
             else:
-                print("Invalid ID, please select a valid recipe ID.")
+                print("\nInvalid ID, please select a valid recipe ID.")
         except ValueError:
-            print("Please enter a valid number.")
+            print("\nPlease enter a valid number.")
 
     # Execute the DELETE query
     delete_query = "DELETE FROM Recipes WHERE id = %s"
@@ -255,6 +274,8 @@ def delete_recipe(conn, cursor):
 
     # Commit changes
     conn.commit()
-    print("Recipe deleted successfully!")
+    print("\nRecipe deleted successfully!")
 
-        
+if __name__ == "__main__":
+    main_menu(conn, cursor)
+    print("Script has completed.")
