@@ -61,6 +61,15 @@ def main_menu(conn, cursor):
             print("...returning to main menu\n\n")
 
     conn.close()
+    
+# Recipe display
+def format_recipe_display(recipe):
+    print(f"\n{recipe[0]}. Recipe: {recipe[1].title()}")
+    print(f"   Time: {recipe[3]} mins")
+    print("   Ingredients:")
+    for ingredient in recipe[2].split(", "):
+        print(f"   - {ingredient.title()}")
+    print(f"   Difficulty: {recipe[4]}") 
 
 # Calculate recipe difficulty
 def calculate_difficulty(cooking_time, ingredients):
@@ -73,15 +82,6 @@ def calculate_difficulty(cooking_time, ingredients):
         return "Intermediate"
     elif cooking_time >= 10 and num_ingredients >= 4:
         return "Hard"
-
-# Recipe display
-def format_recipe_display(recipe):
-    print(f"\n{recipe[0]}. Recipe: {recipe[1].title()}")
-    print(f"   Time: {recipe[3]} mins")
-    print("   Ingredients:")
-    for ingredient in recipe[2].split(", "):
-        print(f"   - {ingredient.title()}")
-    print(f"   Difficulty: {recipe[4]}") 
 
 def sanitize_ingredients(ingredients):
     # Split by comma, trim spaces, and remove empty entries
