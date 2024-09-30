@@ -127,7 +127,7 @@ def view_all_recipes():
         print(recipe)
 
 # Search by ingredient
-def search_recipe():
+def search_by_ingredients():
     # Query to check for table entries
     recipe_count = session.query(Recipe).count()
     if recipe_count == 0:
@@ -186,6 +186,75 @@ def search_recipe():
         for recipe in matching_recipes:
             print(recipe)
 
+# Edit recipe
+def edit_recipe():
+    # Check if recipe exists
+    recipe_count = session.query(Recipe).count()
+    if recipe_count == 0:
+        print("Recipe does not exist in database.")
+        return None
+    
+    # Retrieve id and name of each recipe
+    results = session.query(Recipe.id, Recipe.name).all()
+
+    # Display recipes to user
+    print("\nAvailable recipes:")
+    for recipe in results:
+        print(f"ID: {recipe.id} - Name: {recipe.name}")
+
+    # Prompt user to select recipe by ID to update
+    selected_id = input("Enter the ID of the recipe you would like to update: ")
+    if not selected_id.isnumeric() or int(selected_id) not in [r.id for r in results]:
+        print("Error: Recipe must be selected by its ID. Please try again.")
+        return None
+    
+    # Retrieve recipe of selected ID
+    recipe_to_edit = session.query(Recipe).filter_by(id=int(selected_id)).one()
+
+    # Print the selected recipe details
+    print("Recipe details:")
+    print(f"1. Name: {recipe_to_edit.name}")
+    print(f"2. Ingredients: {recipe_to_edit.ingredients}")
+    print(f"3. Cooking Time: {recipe_to_edit.cooking_time} minutes")
+
+    # Prompt user for field to update
+    choice = input("enter the number of the field 1, 2, or 3 to update: ")
+    if choice not in ["1", "2", "3"]:
+        print("Invalid choice. Please choose 1, 2, or 3.")
+        return None
+    
+    # Update attribute based on user's choice
+    if choice == "1":
+        new_name = input("Enter new recipe name: ")
+        if len(new_name) > 50 or not new_name.isalpha():
+            print("Error: Recipe's new name must be letters only and no longer than 50 characters.")
+            return None
+        recipe_to_edit.name = new_name
+
+    elif choice == "2":
+        new_ingredients = []
+        n = int(input("How many ingredients would you like to add?: "))
+
+        for i in range(n):
+            ingredient = input(f"Enter ingredient {i+1}: ")
+            new_ingredients.append(ingredient)
+
+        recipe_to_edit.ingredients = ", ".join(new_ingredients)
+
+    if choice == "3":
+        new_time = input("Enter the new cooking time in minutes: ")
+        if not new_time.isnumeric():
+            print("Error: Cooking time must be entered as a number.")
+            return None
+        recipe_to_edit.cooking_time = int(new_time)
+    
+    # Recalculate difficulty of updated recipe
+    recipe_to_edit.calculate_difficulty()
+
+    session.commit()
+
+    print("Recipe has been updated successfully!")
+
 # Define main_menu function
 def main_menu():
     while True:
@@ -201,7 +270,7 @@ def main_menu():
         if choice == '1':
             create_recipe()
         elif choice == '2':
-            search_recipe()
+            search_by_ingredients()
         elif choice == '3':
             update_recipe()
         elif choice == '4':
