@@ -255,6 +255,50 @@ def edit_recipe():
 
     print("Recipe has been updated successfully!")
 
+def delete_recipe():
+    # Check if recipe exists
+    recipe_count = session.query(Recipe).count()
+    if recipe_count == 0:
+        print("Recipe does not exist in database.")
+        return None
+    
+    # Retrieve id and name of each recipe
+    results = session.query(Recipe.id, Recipe.name).all()
+
+    # Display recipes to user
+    print("\nAvailable recipes:")
+    for recipe in results:
+        print(f"ID: {recipe.id} - Name: {recipe.name}")
+
+    # Prompt user to select recipe by ID to update
+    selected_id = input("Enter the ID of the recipe you would like to delete: ")
+    if not selected_id.isnumeric() or int(selected_id) not in [r.id for r in results]:
+        print("Error: Recipe must be selected by its ID. Please try again.")
+        return None
+    
+    # Convert input to integer
+    selected_id = int(selected_id)
+
+    # Retrieve recipe of selected ID
+    recipe_to_delete = session.query(Recipe).filter_by(id=selected_id).one()
+
+    # Confirm deletion
+    choice = input(f"Are you sure you want to delete recipe '{recipe_to_delete.name}'? Enter 'Y' or 'N': ").lower()
+
+    # Action based on user choice
+    if choice == 'N':
+        print("Recipe not deleted.")
+        return None
+    
+    elif choice == 'Y':
+        session.delete(recipe_to_delete)
+        session.commit()
+        print("Recipe has been deleted.")
+
+    else:
+        print("Invalid choice. You must enter 'Y' or 'N'.")
+        return None
+
 # Define main_menu function
 def main_menu():
     while True:
@@ -272,7 +316,7 @@ def main_menu():
         elif choice == '2':
             search_by_ingredients()
         elif choice == '3':
-            update_recipe()
+            edit_recipe()
         elif choice == '4':
             delete_recipe()
         elif choice == '5':
