@@ -202,10 +202,10 @@ def edit_recipe():
     # Display recipes to user
     print("\nAvailable recipes:")
     for recipe in results:
-        print(f"ID: {recipe.id} - Name: {recipe.name}")
+        print(f"{recipe.id}. {recipe.name}")
 
     # Prompt user to select recipe by ID to update
-    selected_id = input("\nEnter the ID of the recipe you would like to update: ")
+    selected_id = input("\nEnter the ID number of the recipe you would like to update: ")
     if not selected_id.isnumeric() or int(selected_id) not in [r.id for r in results]:
         print("\nError: Recipe must be selected by its ID. Please try again.")
         return None
